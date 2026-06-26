@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2D Хорор: Повне Виживання в Квартирах</title>
     <style>
+#task-info-topright {
+            position: absolute;
+            top: -45px; /* Піднято вище */
+            right: 0;
+            font-size: 0.85rem;
+            color: #ffaa00;
+            font-weight: bold;
+            border: 1px solid #333;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: #111;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        #task-info-topright:hover {
+            opacity: 0; /* Зникає при наведенні */
+        }
         * { box-sizing: border-box; }
         body {
             background-color: #0d0d13;
