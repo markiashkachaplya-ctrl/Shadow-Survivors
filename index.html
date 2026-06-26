@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Хорор: Повне Виживання в Квартирах</title>
+    <title>До ранку не доживе ніхто</title>
     <style>
         #task-info-topright {
             position: absolute;
@@ -300,7 +300,7 @@
     <audio id="screamer-scream" src="https://actions.google.com/sounds/v1/horror/monster_screaming.ogg" preload="auto"></audio>
 
     <div id="setup-screen" class="overlay-screen">
-        <div class="ending-title" id="menu-main-title" style="color:#ff3333; text-shadow: 0 0 10px rgba(255,0,0,0.4); font-size: 2.3rem; margin-bottom: 20px;">КОНФІГУРАЦІЯ ЖАХУ</div>
+        <div class="ending-title" id="menu-main-title" style="color:#ff3333; text-shadow: 0 0 10px rgba(255,0,0,0.4); font-size: 2.3rem; margin-bottom: 20px;">ДО РАНКУ НЕ ДОЖИВЕ НІХТО</div>
         
         <div class="setup-container" id="step-apartment-view">
             <h3 id="step1-title">КРОК 1: ОБЕРІТЬ КВАРТИРУ</h3>
@@ -330,7 +330,7 @@
 
     <div id="game-wrapper">
         <header>
-            <h1 id="game-title">КВАРТИРА: ХОРР-ВИЖИВАННЯ</h1>
+            <h1 id="game-title">ДО РАНКУ НЕ ДОЖИВЕ НІХТО</h1>
             <div id="score-counter" style="font-weight:bold; color:#888;"><span id="progress-label">Прогрес:</span> <span id="score" style="color:#fff;">0</span>/<span id="max-score-display">20</span></div>
         </header>
 
@@ -388,7 +388,7 @@
 
         const i18n = {
             uk: {
-                mainTitle: "КОНФІГУРАЦІЯ ЖАХУ",
+                mainTitle: "ДО РАНКУ НЕ ДОЖИВЕ НІХТО",
                 step1: "КРОК 1: ОБЕРІТЬ КВАРТИРУ",
                 step2: "КРОК 2: ОБЕРІТЬ СКЛАДНІСТЬ",
                 apt: "КВАРТИРА №",
@@ -401,7 +401,7 @@
                 progress: "Прогрес:",
                 fear: "😱 РІВЕНЬ СТРАХУ",
                 battery: "🔋 ЛІХТАРИК",
-                gameTitle: "КВАРТИРА №{num}: ХОРР-ВИЖИВАННЯ",
+                gameTitle: "ДО РАНКУ НЕ ДОЖИВЕ НІХТО (КВАРТИРА №{num})",
                 enter: "[Зайти]",
                 chest: "[Батарейки]",
                 doorClosed: "ЗАЧИНЕНІ",
@@ -413,7 +413,7 @@
                 batteryChestBtn: "ЗАМІНИТИ БАТАРЕЙКИ",
                 batteryRenewed: "Батарейки оновлено! Повертайтеся.",
                 trapTriggered: "❌ ВИ ПОПАЛИСЯ! Ви піддалися на провокацію сутності. Рівень страху критично зріс!",
-                taskCleared: "✅ Успішно ліквідовано! Аналізуємо 상황 далі...",
+                taskCleared: "✅ Успішно ліквідовано! Аналізуємо ситуацію далі...",
                 taskClearedBattery: "✅ Ліквідовано! Також у кутку вы знайшли робочі БАТАРЕЙКИ (+30% заряду)!",
                 skipTrap: "🛡️ ОТРЕЗВІННЯ: Ви проігнорували пастку сутності. Розумний вибір!",
                 skipNormal: "😱 ТЕРОР: Ви залишили аномалію без уваги. Стає набагато страшніше...",
@@ -428,7 +428,7 @@
                 stepWord: "Крок"
             },
             en: {
-                mainTitle: "HORROR CONFIGURATION",
+                mainTitle: "NO ONE SURVIVES UNTIL DAWN",
                 step1: "STEP 1: CHOOSE APARTMENT",
                 step2: "STEP 2: CHOOSE DIFFICULTY",
                 apt: "APARTMENT #",
@@ -441,7 +441,7 @@
                 progress: "Progress:",
                 fear: "😱 FEAR LEVEL",
                 battery: "🔋 FLASHLIGHT",
-                gameTitle: "APARTMENT #{num}: HORROR SURVIVAL",
+                gameTitle: "NO ONE SURVIVES UNTIL DAWN (APT #{num})",
                 enter: "[Enter]",
                 chest: "[Batteries]",
                 doorClosed: "CLOSED",
@@ -468,8 +468,8 @@
                 stepWord: "Step"
             },
             ru: {
-                mainTitle: "КОНФИГУРАЦИЯ УЖАСА",
-                step1: "ШАГ 1: ВЫБЕРИТЕ КВАРТИРА",
+                mainTitle: "ДО УТРА НЕ ДОЖИВЕТ НИКТО",
+                step1: "ШАГ 1: ВЫБЕРИТЕ КВАРТИРУ",
                 step2: "ШАГ 2: ВЫБЕРИТЕ СЛОЖНОСТЬ",
                 apt: "КВАРТИРА №",
                 easy: "ЛЕГКИЙ УРОВЕНЬ",
@@ -481,7 +481,7 @@
                 progress: "Прогресс:",
                 fear: "😱 УРОВЕНЬ СТРАХА",
                 battery: "🔋 ФОНАРИК",
-                gameTitle: "КВАРТИРА №{num}: ХОРРОР-ВЫЖИВАНИЕ",
+                gameTitle: "ДО УТРА НЕ ДОЖИВЕТ НИКТО (КВАРТИРА №{num})",
                 enter: "[Войти]",
                 chest: "[Батарейки]",
                 doorClosed: "ЗАКРЫТА",
@@ -493,7 +493,7 @@
                 batteryChestBtn: "ЗАМЕНИТЬ БАТАРЕЙКИ",
                 batteryRenewed: "Батарейки обновлены! Возвращайтесь.",
                 trapTriggered: "❌ ВЫ ПОПАЛИСЬ! Вы поддались на провокацию сущности. Уровень страха критически вырос!",
-                taskCleared: "✅ Усчешно ликвидировано! Анализируем ситуацию дальше...",
+                taskCleared: "✅ Успешно ликвидировано! Анализируем ситуацию дальше...",
                 taskClearedBattery: "✅ Ликвидировано! Также в углу вы нашли рабочие БАТАРЕЙКИ (+30% заряда)!",
                 skipTrap: "🛡️ ОТРЕЗВЛЕНИЕ: Вы проигнорировали ловушку сущности. Разумный выбор!",
                 skipNormal: "😱 ТЕРРОР: Вы оставили активную аномалию без внимания. Становится гораздо страшнее...",
@@ -504,7 +504,7 @@
                 darkDesc: "Фонарик полностью разрядился. Без света вы не продержались и минуты.",
                 restartBtn: "ПОПРОБОВАТЬ СНОВА",
                 mainActionDefault: "ВЫПОЛНИТЬ ДЕЙСТВИЕ",
-                skipActionDefault: "ПРОПУСТИТИ ДЕЙСТВИЕ",
+                skipActionDefault: "ПРОПУСТИТЬ ДЕЙСТВИЕ",
                 stepWord: "Шаг"
             }
         };
