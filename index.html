@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Хорор: Повне Виживання в Квартирах</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background-color: #0d0d13;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #game-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 850px;
+            background: #14141f;
+            border: 3px solid #3a0007;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.4);
+            position: relative;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #222;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        h1 { margin: 0; font-size: 1.4rem; color: #ff3333; text-shadow: 0 0 5px rgba(255,0,0,0.5); }
+
+        .status-container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .status-box { flex: 1; background: #1a1a26; padding: 10px; border-radius: 6px; border: 1px solid #333; }
+        .bar-bg { width: 100%; background: #222; height: 12px; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+        .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
+        #fear-fill { background: #ff0055; width: 0%; }
+        #battery-fill { background: #00ff66; width: 100%; }
+
+        #apartment-map {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .grid-apt1 { grid-template-columns: 1fr 1fr; }
+        .grid-apt-default { grid-template-columns: 1fr 1fr 1fr; }
+
+        .room {
+            background: #1e1e2f;
+            border: 2px solid #444;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            padding: 15px;
+            text-align: center;
+            min-height: 100px;
+        }
+
+        .room:hover { border-color: #ff3333; background: #25253a; }
+        .room.active-room { border-color: #ffaa00; box-shadow: 0 0 15px rgba(255,170,0,0.3); background: #2a2a40; }
+        .room-title { font-size: 1rem; font-weight: bold; margin-bottom: 5px; color: #aaa; }
+        .room.active-room .room-title { color: #ffaa00; }
+
+        #front-door {
+            background: #2a1a1a;
+            border: 2px dashed #ff3333;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        #front-door:hover { background: #3d2222; }
+
+        .door-apt1 { grid-column: span 2; }
+        .door-apt-default { grid-column: span 3; }
+
+        #interaction-panel {
+            background: #1a1a26;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 200px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #task-info-topright {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 0.85rem;
+            color: #ffaa00;
+            font-weight: bold;
+            border: 1px solid #333;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: #111;
+        }
+
+        #task-text { font-size: 1.15rem; color: #ffcc00; font-weight: bold; margin-bottom: 20px; line-height: 1.5; min-height: 60px; width: 90%; text-align: center; }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn {
+            background: #8b0000;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: background 0.2s, transform 0.1s;
+        }
+        .action-btn:hover { background: #b30000; transform: translateY(-2px); }
+        .action-btn:disabled { background: #444; color: #888; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .skip-btn {
+            background: #2b2b36;
+            color: #bbb;
+            border: 1px solid #555;
+        }
+        .skip-btn:hover { background: #3d3d4f; color: #fff; }
+        .skip-btn:disabled { background: #222; color: #555; cursor: not-allowed; transform: none; }
+
+        .overlay-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #screamer-screen { background: #000; }
+        #screamer-monster { font-size: 15rem; animation: shake 0.05s infinite; color: red; text-shadow: 0 0 40px red; margin: 0; }
+        
+        .ending-title { font-size: 3rem; font-weight: bold; margin-bottom: 15px; }
+        .ending-desc { font-size: 1.3rem; max-width: 600px; color: #ccc; margin-bottom: 30px; line-height: 1.6; }
+
+        @keyframes shake {
+            0% { transform: translate(3px, 5px) rotate(0deg); }
+            50% { transform: translate(-5px, -3px) rotate(-1deg); }
+            100% { transform: translate(2px, -4px) rotate(1deg); }
+        }
+
+        .restart-btn {
+            background: #222; color: #fff; border: 2px solid #ff3333;
+            padding: 12px 25px; font-size: 1.1rem; cursor: pointer; font-family: inherit;
+            margin-top: 10px;
+        }
+        .restart-btn:hover { background: #ff3333; color: #000; font-weight: bold; }
+
+        #setup-screen {
+            display: flex;
+            background: #0a0a0f;
+        }
+        .setup-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 450px;
+            width: 100%;
+            justify-content: center;
+            background: #11111a;
+            border: 2px solid #222;
+            padding: 25px;
+            border-radius: 8px;
+            gap: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+        }
+        .setup-container h3 { margin: 0 0 10px 0; color: #ffaa00; text-align: center; font-size: 1.3rem; letter-spacing: 1px; }
+        
+        .select-btn {
+            background: #1a1a26; 
+            color: #fff; 
+            border: 2px solid #444;
+            padding: 14px; 
+            font-size: 1rem; 
+            cursor: pointer; 
+            font-family: inherit;
+            border-radius: 6px; 
+            font-weight: bold; 
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .select-btn:hover, .select-btn.active { border-color: #ff3333; color: #ff3333; box-shadow: 0 0 10px rgba(255,51,51,0.2); }
+        .select-btn.active { background: #2a1518; border-color: #ff3333; }
+        
+        .nav-menu-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            width: 100%;
+        }
+        .nav-menu-btn {
+            flex: 1;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .next-btn { background: #8b0000; color: #fff; border: 2px solid #ff3333; }
+        .next-btn:hover { background: #ff3333; color: #000; }
+        .back-btn { background: #222; color: #aaa; border: 1px solid #555; }
+        .back-btn:hover { background: #333; color: #fff; }
+
+        .lang-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 10005; 
+        }
+        .lang-btn {
+            background: #111;
+            color: #666;
+            border: 1px solid #333;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-family: inherit;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .lang-btn:hover { border-color: #ff3333; color: #fff; }
+        .lang-btn.active { background: #8b0000; color: #fff; border-color: #ff3333; box-shadow: 0 0 8px rgba(255,0,0,0.4); }
+    </style>
+</head>
+<body>
+
+    <div class="lang-panel" id="lang-wrapper-panel">
+        <button class="lang-btn active" id="lang-btn-uk" onclick="changeLanguage('uk')">UA</button>
+        <button class="lang-btn" id="lang-btn-en" onclick="changeLanguage('en')">EN</button>
+        <button class="lang-btn" id="lang-btn-ru" onclick="changeLanguage('ru')">RU</button>
+    </div>
+
+    <audio id="screamer-sound" src="https://actions.google.com/sounds/v1/foley/creepy_wooden_creak.ogg" preload="auto"></audio>
+    <audio id="screamer-scream" src="https://actions.google.com/sounds/v1/horror/monster_screaming.ogg" preload="auto"></audio>
+
+    <div id="setup-screen" class="overlay-screen">
+        <div class="ending-title" id="menu-main-title" style="color:#ff3333; text-shadow: 0 0 10px rgba(255,0,0,0.4); font-size: 2.3rem; margin-bottom: 20px;">КОНФІГУРАЦІЯ ЖАХУ</div>
+        
+        <div class="setup-container" id="step-apartment-view">
+            <h3 id="step1-title">КРОК 1: ОБЕРІТЬ КВАРТИРУ</h3>
+            <button class="select-btn active" id="apt-btn-1" onclick="selectApartment(1)">КВАРТИРА №1</button>
+            <button class="select-btn" id="apt-btn-2" onclick="selectApartment(2)">КВАРТИРА №2</button>
+            <button class="select-btn" id="apt-btn-3" onclick="selectApartment(3)">КВАРТИРА №3</button>
+            
+            <div class="nav-menu-group">
+                <button class="nav-menu-btn next-btn" id="next-btn-text" style="flex: 2;" onclick="goToStep(2)">ДАЛІ ➔</button>
+            </div>
+        </div>
+        
+        <div class="setup-container" id="step-difficulty-view" style="display: none;">
+            <h3 id="step2-title">КРОК 2: ОБЕРІТЬ СКЛАДНІСТЬ</h3>
+            <button class="select-btn active" id="diff-btn-easy" onclick="selectDifficulty('easy')">ЛЕГКИЙ РІВЕНЬ</button>
+            <button class="select-btn" id="diff-btn-medium" onclick="selectDifficulty('medium')">СЕРЕДНІЙ РІВЕНЬ</button>
+            <button class="select-btn" id="diff-btn-hardcore" onclick="selectDifficulty('hardcore')">ХАРДКОРНИЙ РІВЕНЬ</button>
+            
+            <div class="nav-menu-group">
+                <button class="nav-menu-btn back-btn" id="back-btn-text" onclick="goToStep(1)">⬅ НАЗАД</button>
+                <button class="nav-menu-btn next-btn" id="start-btn-text" onclick="startGame()">ГРАТИ 💀</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-wrapper">
+        <header>
+            <h1 id="game-title">КВАРТИРА: ХОРР-ВИЖИВАННЯ</h1>
+            <div id="score-counter" style="font-weight:bold; color:#888;"><span id="progress-label">Прогрес:</span> <span id="score" style="color:#fff;">0</span>/<span id="max-score-display">20</span></div>
+        </header>
+
+        <div class="status-container">
+            <div class="status-box">
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+                    <span id="label-fear">😱 РІВЕНЬ СТРАХУ</span>
+                    <span id="fear-text">0%</span>
+                </div>
+                <div class="bar-bg"><div id="fear-fill" class="bar-fill"></div></div>
+            </div>
+            <div class="status-box">
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+                    <span id="label-battery">🔋 ЛІХТАРИК</span>
+                    <span id="battery-text">100%</span>
+                </div>
+                <div class="bar-bg"><div id="battery-fill" class="bar-fill"></div></div>
+            </div>
+        </div>
+
+        <div id="apartment-map"></div>
+
+        <div id="interaction-panel">
+            <div id="task-info-topright"></div>
+
+            <div id="task-text">...</div>
+            <div class="btn-group">
+                <button class="action-btn" id="main-action-btn" onclick="completeTask()">ВИКОНАТИ ДІЮ</button>
+                <button class="action-btn skip-btn" id="skip-action-btn" onclick="skipTask()">ПРОПУСТИТИ ДІЮ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screamer-screen" class="overlay-screen">
+        <p id="screamer-monster">👹</p>
+        <div class="ending-title" id="screamer-title" style="color:red; margin-top:20px;">ВАС УБИТО!</div>
+        <div class="ending-desc" id="screamer-desc">...</div>
+        <button class="restart-btn" id="btn-restart-1" onclick="showSetupScreen()">СПРОБУВАТИ ЗНОВУ</button>
+    </div>
+
+    <div id="darkness-screen" class="overlay-screen">
+        <div class="ending-title" id="darkness-title" style="color:#555;">ТЕМРЯВА ЗАБРАЛА ВАС</div>
+        <div class="ending-desc" id="darkness-desc">...</div>
+        <button class="restart-btn" id="btn-restart-2" onclick="showSetupScreen()">СПРОБУВАТИ ЗНОВУ</button>
+    </div>
+
+    <div id="win-screen" class="overlay-screen">
+        <div class="ending-title" id="win-title" style="color:#00ff66;">ВИ ВИЖИЛИ!</div>
+        <div class="ending-desc" id="win-desc">...</div>
+        <button class="restart-btn" id="btn-restart-3" style="border-color:#00ff66;" onclick="showSetupScreen()">ГРАТИ ЗНОВУ</button>
+    </div>
+
+    <script>
+        let currentLang = 'uk';
+
+        const i18n = {
+            uk: {
+                mainTitle: "КОНФІГУРАЦІЯ ЖАХУ",
+                step1: "КРОК 1: ОБЕРІТЬ КВАРТИРУ",
+                step2: "КРОК 2: ОБЕРІТЬ СКЛАДНІСТЬ",
+                apt: "КВАРТИРА №",
+                easy: "ЛЕГКИЙ РІВЕНЬ",
+                medium: "СЕРЕДНІЙ РІВЕНЬ",
+                hardcore: "ХАРДКОРНИЙ РІВЕНЬ",
+                next: "ДАЛІ ➔",
+                back: "⬅ НАЗАД",
+                play: "ГРАТИ 💀",
+                progress: "Прогрес:",
+                fear: "😱 РІВЕНЬ СТРАХУ",
+                battery: "🔋 ЛІХТАРИК",
+                gameTitle: "КВАРТИРА №{num}: ХОРР-ВИЖИВАННЯ",
+                enter: "[Зайти]",
+                chest: "[Батарейки]",
+                doorClosed: "ЗАЧИНЕНІ",
+                doorOpen: "ВІДЧИНЕНІ (ЖАХЛИВА НЕБЕЗПЕКА!)",
+                doorLabel: "🚪 ВХІДНІ ДВЕРІ:",
+                target: "Ціль:",
+                calm: "Тут спокійно. Щось дивне коїться в кімнаті: {r}! Мерщій ідіть туди.",
+                batteryChestText: "Ви біля комода. Швидко замініть батарейки!",
+                batteryChestBtn: "ЗАМІНИТИ БАТАРЕЙКИ",
+                batteryRenewed: "Батарейки оновлено! Повертайтеся.",
+                trapTriggered: "❌ ВИ ПОПАЛИСЯ! Ви піддалися на провокацію сутності. Рівень страху критично зріс!",
+                taskCleared: "✅ Успішно ліквідовано! Аналізуємо ситуацію далі...",
+                taskClearedBattery: "✅ Ліквідовано! Також у кутку ви знайшли робочі БАТАРЕЙКИ (+30% заряду)!",
+                skipTrap: "🛡️ ОТРЕЗВІННЯ: Ви проігнорували пастку сутності. Розумний вибір!",
+                skipNormal: "😱 ТЕРОР: Ви залишили активну аномалію без уваги. Стає набагато страшніше...",
+                winTitle: "ВИ ВИЖИЛИ!",
+                winDesc: "Неймовірно! Ви пройшли всі {steps} унікальних подій у Квартирі №{apt} без жодного повтору, розгадали пастки та дочекалися світанку!",
+                winBtn: "ГРАТИ ЗНОВУ",
+                darkTitle: "ТЕМРЯВА ЗАБРАЛА ВАС",
+                darkDesc: "Ліхтарик повністю розрядився. Без світла ви не протрималися й хвилини.",
+                restartBtn: "СПРОБУВАТИ ЗНОВУ",
+                mainActionDefault: "ВИКОНАТИ ДІЮ",
+                skipActionDefault: "ПРОПУСТИТИ ДІЮ",
+                stepWord: "Крок"
+            },
+            en: {
+                mainTitle: "HORROR CONFIGURATION",
+                step1: "STEP 1: CHOOSE APARTMENT",
+                step2: "STEP 2: CHOOSE DIFFICULTY",
+                apt: "APARTMENT #",
+                easy: "EASY MODE",
+                medium: "MEDIUM MODE",
+                hardcore: "HARDCORE MODE",
+                next: "NEXT ➔",
+                back: "⬅ BACK",
+                play: "PLAY 💀",
+                progress: "Progress:",
+                fear: "😱 FEAR LEVEL",
+                battery: "🔋 FLASHLIGHT",
+                gameTitle: "APARTMENT #{num}: HORROR SURVIVAL",
+                enter: "[Enter]",
+                chest: "[Batteries]",
+                doorClosed: "CLOSED",
+                doorOpen: "OPEN (EXTREME DANGER!)",
+                doorLabel: "🚪 FRONT DOOR:",
+                target: "Target:",
+                calm: "It's calm here. Something strange is happening in the room: {r}! Go there quickly.",
+                batteryChestText: "You are at the chest of drawers. Change the batteries quickly!",
+                batteryChestBtn: "REPLACE BATTERIES",
+                batteryRenewed: "Batteries renewed! Turn back.",
+                trapTriggered: "❌ YOU ARE CAUGHT! You fell for the entity's trap. Fear level increased critically!",
+                taskCleared: "✅ Successfully contained! Analyzing the situation further...",
+                taskClearedBattery: "✅ Contained! Also, you found working BATTERIES in the corner (+30% charge)!",
+                skipTrap: "🛡️ SANITY: You ignored the entity's trap. Wise choice!",
+                skipNormal: "😱 TERROR: You left an active anomaly unattended. It gets much scarier...",
+                winTitle: "YOU SURVIVED!",
+                winDesc: "Incredible! You completed all {steps} unique non-repeating events in Apartment #{apt}, avoided the traps, and survived until dawn!",
+                winBtn: "PLAY AGAIN",
+                darkTitle: "THE DARKNESS TOOK YOU",
+                darkDesc: "The flashlight is completely dead. Without light, you didn't last a minute.",
+                restartBtn: "TRY AGAIN",
+                mainActionDefault: "PERFORM ACTION",
+                skipActionDefault: "SKIP ACTION",
+                stepWord: "Step"
+            },
+            ru: {
+                mainTitle: "КОНФИГУРАЦИЯ УЖАСА",
+                step1: "ШАГ 1: ВЫБЕРИТЕ КВАРТИРА",
+                step2: "ШАГ 2: ВЫБЕРИТЕ СЛОЖНОСТЬ",
+                apt: "КВАРТИРА №",
+                easy: "ЛЕГКИЙ УРОВЕНЬ",
+                medium: "СРЕДНИЙ УРОВЕНЬ",
+                hardcore: "ХАРДКОРНЫЙ УРОВЕНЬ",
+                next: "ДАЛЕЕ ➔",
+                back: "⬅ НАЗАД",
+                play: "ИГРАТЬ 💀",
+                progress: "Прогресс:",
+                fear: "😱 УРОВЕНЬ СТРАХА",
+                battery: "🔋 ФОНАРИК",
+                gameTitle: "КВАРТИРА №{num}: ХОРРОР-ВЫЖИВАНИЕ",
+                enter: "[Войти]",
+                chest: "[Батарейки]",
+                doorClosed: "ЗАКРЫТА",
+                doorOpen: "ОТКРЫТА (УЖАСНАЯ ОПАСНОСТЬ!)",
+                doorLabel: "🚪 ВХОДНАЯ ДВЕРЬ:",
+                target: "Цель:",
+                calm: "Здесь спокойно. Что-то странное творится в комнате: {r}! Скорее идите туда.",
+                batteryChestText: "Вы у комода. Быстро замените батарейки!",
+                batteryChestBtn: "ЗАМЕНИТЬ БАТАРЕЙКИ",
+                batteryRenewed: "Батарейки обновлены! Возвращайтесь.",
+                trapTriggered: "❌ ВЫ ПОПАЛИСЬ! Вы поддались на провокацию сущности. Уровень страха критически вырос!",
+                taskCleared: "✅ Успешно ликвидировано! Анализируем ситуацию дальше...",
+                taskClearedBattery: "✅ Ликвидировано! Также в углу вы нашли рабочие БАТАРЕЙКИ (+30% заряда)!",
+                skipTrap: "🛡️ ОТРЕЗВЛЕНИЕ: Вы проигнорировали ловушку сущности. Разумный выбор!",
+                skipNormal: "😱 ТЕРРОР: Вы оставили активную аномалию без внимания. Становится гораздо страшнее...",
+                winTitle: "ВЫ ВЫЖИЛИ!",
+                winDesc: "Невероятно! Вы прошли все {steps} уникальных событий в Квартире №{apt} без единого повтора, разгадали ловушки и дождались рассвета!",
+                winBtn: "ИГРАТЬ СНОВА",
+                darkTitle: "ТЕМНОТА ЗАБРАЛА ВАС",
+                darkDesc: "Фонарик полностью разрядился. Без света вы не продержались и минуты.",
+                restartBtn: "ПОПРОБОВАТЬ СНОВА",
+                mainActionDefault: "ВЫПОЛНИТЬ ДЕЙСТВИЕ",
+                skipActionDefault: "ПРОПУСТИТИ ДЕЙСТВИЕ",
+                stepWord: "Шаг"
+            }
+        };
+
+        const roomLoc = {
+            uk: { corridor: 'Коридор', kitchen: 'Кухня', bedroom: 'Спальня', bathroom: 'Ванна кімната', livingroom: 'Вітальня', battery: 'Комод' },
+            en: { corridor: 'Corridor', kitchen: 'Kitchen', bedroom: 'Bedroom', bathroom: 'Bathroom', livingroom: 'Living Room', battery: 'Chest' },
+            ru: { corridor: 'Коридор', kitchen: 'Кухня', bedroom: 'Спальня', bathroom: 'Ванная комната', livingroom: 'Гостиная', battery: 'Комод' }
+        };
+
+        const monstersPool = {
+            uk: [
+                { emoji: '👹', color: 'red', title: 'ВАС РОЗДЕРЛИ!', desc: 'Стародавній демон квартири вирвав вашу душу.' },
+                { emoji: '👻', color: 'cyan', title: 'СЕРЦЕ ЗУПИНИЛОСЬ!', desc: 'Привид померлого господаря квартири пройшов крізь вас.' },
+                { emoji: '🕷️', color: 'green', title: 'ОБПЛЕТЕНІ ПАВУТИНОЮ!', desc: 'Гігантський проклятий павук затягнув вас під стелю.' }
+            ],
+            en: [
+                { emoji: '👹', color: 'red', title: 'YOU WERE TORN APART!', desc: 'An ancient apartment demon ripped your soul away.' },
+                { emoji: '👻', color: 'cyan', title: 'HEART STOPPED!', desc: 'The ghost of the former owner passed through you.' },
+                { emoji: '🕷️', color: 'green', title: 'WEB TRAPPED!', desc: 'A giant cursed spider dragged you to the ceiling.' }
+            ],
+            ru: [
+                { emoji: '👹', color: 'red', title: 'ВАС РАЗОРВАЛИ!', desc: 'Древний демон квартиры вырвал вашу душу.' },
+                { emoji: '👻', color: 'cyan', title: 'СЕРДЦЕ ОСТАНОВИЛОСЬ!', desc: 'Призрак умершего хозяина квартиры прошёл сквозь вас.' },
+                { emoji: '🕷️', color: 'green', title: 'ОПЛЕТЕНЫ ПАУТИНОЮ!', desc: 'Гигантский проклятый паук затащил вас под потолок.' }
+            ]
+        };
+
+        const tasksRawPool = [
+            // CORRIDOR (7)
+            { room: 'corridor', text: { uk: 'У коридорі блимає лампочка. Треба закрутити її сильніше!', en: 'A light bulb is flickering in the corridor. Screw it in tighter!', ru: 'В коридоре мигает лампочка. Нужно закрутить её сильнее!' }, actionText: { uk: 'Закрутити лампочку', en: 'Screw in light bulb', ru: 'Закрутить лампочку' }, isTrap: false },
+            { room: 'corridor', text: { uk: '⚠️ ПАСТКА? Хтось плаче за вхідними ДВЕРИМА і благає відчинити. Відчинити двері?', en: '⚠️ TRAP? Someone is crying behind the FRONT DOOR, begging to enter. Open it?', ru: '⚠️ ЛОВУШКА? Кто-то плачет за входной ДВЕРЬЮ и умоляет открыть. Открыть дверь?' }, actionText: { uk: 'ВІДЧИНИТИ ДВЕРІ', en: 'OPEN THE DOOR', ru: 'ОТКРЫТЬ ДВЕРЬ' }, isTrap: true },
+            { room: 'corridor', text: { uk: 'Шпалери на стіні дивно здулися. Притисніть їх, поки вони не тріснули.', en: 'The wallpaper is bulging strangely. Press it down before it bursts.', ru: 'Обои на стене странно вздулись. Прижмите их, пока они не треснули.' }, actionText: { uk: 'Притиснути шпалери', en: 'Press wallpaper', ru: 'Прижать обои' }, isTrap: false },
+            { room: 'corridor', text: { uk: '⚠️ ПАСТКА? На підлозі лежить запечатаний конверт з написом "Відкрий мене зараз". Відкрити?', en: '⚠️ TRAP? An envelope on the floor says "Open me now". Open it?', ru: '⚠️ ЛОВУШКА? На полу лежит запечатанный конверт с надписью "Открой меня сейчас". Открыть?' }, actionText: { uk: 'ВІДКРИТИ КОНВЕРТ', en: 'OPEN ENVELOPE', ru: 'ОТКРЫТЬ КОНВЕРТ' }, isTrap: true },
+            { room: 'corridor', text: { uk: 'Старий настінний годинник пішов назад! Негайно зупиніть маятник.', en: 'The old wall clock is running backwards! Stop the pendulum immediately.', ru: 'Старые настенные часы пошли назад! Немедленно остановите маятник.' }, actionText: { uk: 'Зупинити маятник', en: 'Stop pendulum', ru: 'Остановить маятник' }, isTrap: false },
+            { room: 'corridor', text: { uk: '⚠️ ПАСТКА? Дзеркало шепоче ваше ім\'я і просить підійти та торкнутися скла. Торкнутися?', en: '⚠️ TRAP? The mirror whispers your name and asks you to touch it. Touch it?', ru: '⚠️ ЛОВУШКА? Зеркало шепчет ваше имя и просит подойти и коснуться стекла. Коснуться?' }, actionText: { uk: 'ТОРКНУТИСЯ ДЗЕРКАЛА', en: 'TOUCH MIRROR', ru: 'КОСНУТЬСЯ ЗЕРКАЛА' }, isTrap: true },
+            { room: 'corridor', text: { uk: 'З вічка вхідних дверей сочиться чорна смола. Протріть її ганчіркою.', en: 'Black ooze is leaking from the peephole. Wipe it off with a rag.', ru: 'Из глазка входной двери сочится чёрная смола. Протрите её тряпкой.' }, actionText: { uk: 'Протерти вічко', en: 'Wipe peephole', ru: 'Протереть глазок' }, isTrap: false },
+
+            // KITCHEN (7)
+            { room: 'kitchen', text: { uk: 'З холодильника тече червона рідина. Терміново витріть підлогу.', en: 'Red liquid is leaking from the fridge. Wipe the floor immediately.', ru: 'Из холодильника течёт красная жидкость. Срочно вытрите пол.' }, actionText: { uk: 'Витерти підлогу', en: 'Wipe the floor', ru: 'Вытереть пол' }, isTrap: false },
+            { room: 'kitchen', text: { uk: '⚠️ ПАСТКА? На столі лежить красивий ніж з вашим ім\'ям. Взяти його до рук?', en: '⚠️ TRAP? A beautiful knife with your name on it is on the table. Pick it up?', ru: '⚠️ ЛОВУШКА? На столе лежит красивый нож с вашим именем. Взять его в руки?' }, actionText: { uk: 'ВЗЯТИ НІЖ', en: 'TAKE THE KNIFE', ru: 'ВЗЯТЬ НОЖ' }, isTrap: true },
+            { room: 'kitchen', text: { uk: 'Газова конфорка спалахнула синім полум\'ям сама по собі. Вимкніть її.', en: 'The gas burner ignited on its own. Turn it off.', ru: 'Газовая конфорка загорелась сама по себе. Выключите её.' }, actionText: { uk: 'Вимкнути конфорку', en: 'Turn off burner', ru: 'Выключить конфорку' }, isTrap: false },
+            { room: 'kitchen', text: { uk: '⚠️ ПАСТКА? У раковині лежить сире м\'ясо, яке дивно пульсує. Спробувати розрізати його?', en: '⚠️ TRAP? Pulsing raw meat is in the sink. Try to cut it?', ru: '⚠️ ЛОВУШКА? В раковине лежит сырое мясо, которое странно пульсирует. Попробовать разрезать его?' }, actionText: { uk: 'РОЗРІЗАТИ М\'ЯСО', en: 'CUT THE MEAT', ru: 'РАЗРЕЗАТЬ МЯСО' }, isTrap: true },
+            { room: 'kitchen', text: { uk: 'Мікрохвильовка увімкнулася порожньою та іскрить. Вимкніть її з мережі.', en: 'The microwave turned on empty and is sparking. Unplug it.', ru: 'Микроволновка включилась пустой и искрит. Выключите её из сети.' }, actionText: { uk: 'Вимкнути з розетки', en: 'Unplug microwave', ru: 'Выключить из розетки' }, isTrap: false },
+            { room: 'kitchen', text: { uk: '⚠️ ПАСТКА? З вентиляції капає солодкий сироп. Спробувати його на смак?', en: '⚠️ TRAP? Sweet syrup is dripping from the vent. Taste it?', ru: '⚠️ ЛОВУШКА? Из вентиляции капает сладкий сироп. Попробовать его на вкус?' }, actionText: { uk: 'СПРОБУВАТИ СИРОП', en: 'TASTE THE SYRUP', ru: 'ПОПРОБОВАТЬ СИРОП' }, isTrap: true },
+            { room: 'kitchen', text: { uk: 'Шафка з посудом почала сильно трястися. Притримайте дверцята.', en: 'The dish cabinet is shaking violently. Hold the doors closed.', ru: 'Шкафчик с посудой начал сильно трястись. Придержите дверцу.' }, actionText: { uk: 'Приримати дверцята', en: 'Hold cabinet doors', ru: 'Придержать дверцу' }, isTrap: false },
+
+            // BEDROOM (7)
+            { room: 'bedroom', text: { uk: 'З-під ліжка чути чиєсь важке дихання. Посвітіть туди ліхтариком.', en: 'Heavy breathing is coming from under the bed. Shine your flashlight there.', ru: 'Из-под кровати слышно чьё-то тяжёлое дыхание. Посветите туда фонариком.' }, actionText: { uk: 'Посвітити під ліжко', en: 'Shine under bed', ru: 'Посветить под кровать' }, isTrap: false },
+            { room: 'bedroom', text: { uk: '⚠️ ПАСТКА? На ліжку дзвонить ваш телефон, але виклик йде від ВАС самих. Відповісти?', en: '⚠️ TRAP? Your phone rings on the bed, but the caller ID is YOURSELF. Answer?', ru: '⚠️ ЛОВУШКА? На кровати звонит ваш телефон, но вызов идёт от ВАС самих. Ответить?' }, actionText: { uk: 'ВІДПОВІСТИ НА ДЗВІНОК', en: 'ANSWER THE CALL', ru: 'ОТВЕТИТЬ НА ЗВОНОК' }, isTrap: true },
+            { room: 'bedroom', text: { uk: 'Дверцята шафи повільно відчиняються самі. Зачиніть їх на засув.', en: 'The wardrobe door is slowly opening by itself. Lock it shut.', ru: 'Дверца шкафа медленно открывается сама. Закройте её на засов.' }, actionText: { uk: 'Зачинити шафу', en: 'Close wardrobe', ru: 'Закрыть шкаф' }, isTrap: false },
+            { room: 'bedroom', text: { uk: '⚠️ ПАСТКА? Стара дитяча іграшка на полиці каже: "Обійми мене". Обійняти її?', en: '⚠️ TRAP? A doll on the shelf says "Hug me". Give it a hug?', ru: '⚠️ ЛОВУШКА? Старая детская игрушка на полке говорит: "Обними меня". Обнять её?' }, actionText: { uk: 'ОБІЙНЯТИ ІГРАШКУ', en: 'HUG THE TOY', ru: 'Обнять игрушку' }, isTrap: true },
+            { room: 'bedroom', text: { uk: 'Вікно само по собі відчинилося від крижаного вітру. Закрийте кватирку.', en: 'The window flew open from an icy wind. Close it tightly.', ru: 'Окно само по себе открылось от леденящего ветра. Закройте форточку.' }, actionText: { uk: 'Закрити вікно', en: 'Close window', ru: 'Закрыть окно' }, isTrap: false },
+            { room: 'bedroom', text: { uk: '⚠️ ПАСТКА? Ковдра на ліжку виглядає так, ніби під нею хтось лежить і кличе вас спати. Лягти поруч?', en: '⚠️ TRAP? The blanket shapes like a human body inviting you to sleep. Lie down?', ru: '⚠️ ЛОВУШКА? Одеяло на кровати выглядит так, будто под ним кто-то лежит и зовёт вас спать. Лечь рядом?' }, actionText: { uk: 'ЛЯГТИ В ЛІЖКО', en: 'LIE DOWN IN BED', ru: 'ЛЕЧЬ В КРОВАТЬ' }, isTrap: true },
+            { room: 'bedroom', text: { uk: 'Картина на стіні перевернулися догори дриґом. Поверніть її у правильне положення.', en: 'The wall painting flipped upside down. Straighten it.', ru: 'Картина на стене перевернулась вверх тормашками. Верните её в правильное положение.' }, actionText: { uk: 'Вирівняти картину', en: 'Straighten painting', ru: 'Выровнять картину' }, isTrap: false },
+
+            // BATHROOM (7)
+            { room: 'bathroom', text: { uk: 'Кран увімкнувся сам і ванна наповнюється іржавою водою. Закрутіть кран.', en: 'The tap turned on by itself, filling the tub with rusty water. Close it.', ru: 'Кран включился сам и ванна наполняется ржавой водой. Закрутите кран.' }, actionText: { uk: 'Закрутити кран', en: 'Close the tap', ru: 'Закрутить кран' }, isTrap: false },
+            { room: 'bathroom', text: { uk: '⚠️ ПАСТКА? З зі зливного отвору ванни вилазить чорне довге волосся. Потягнути за нього?', en: '⚠️ TRAP? Long black hair is crawling out of the bathtub drain. Pull it?', ru: '⚠️ ЛОВУШКА? Из сливного отверстия ванны лезут чёрные длинные волосы. Потянуть за них?' }, actionText: { uk: 'ПОТЯГНУТИ ЗА ВОЛОССЯ', en: 'PULL THE HAIR', ru: 'ПОТЯНУТЬ ЗА ВОЛОСЫ' }, isTrap: true },
+            { room: 'bathroom', text: { uk: 'Дзеркало над раковиною повністю запітніло, хоча вода холодна. Протріть його.', en: 'The mirror fogged up completely despite the cold water. Wipe it clean.', ru: 'Зеркало над раковиной полностью запотело, хотя вода холодная. Протрите его.' }, actionText: { uk: 'Протерети дзеркало', en: 'Wipe mirror', ru: 'Протереть зеркало' }, isTrap: false },
+            { room: 'bathroom', text: { uk: '⚠️ ПАСТКА? У пральній машині крізь скло видно ваше старе фото. Відчинити люк та взяти його?', en: '⚠️ TRAP? Your old photo is inside the washing machine. Open the door to grab it?', ru: '⚠️ ЛОВУШКА? В стиральной машине через стекло видно ваше старое фото. Открыть люк и взять его?' }, actionText: { uk: 'ВІДЧИНИТИ ЛЮК', en: 'OPEN WASHER DOOR', ru: 'ОТКРЫТЬ ЛЮК' }, isTrap: true },
+            { room: 'bathroom', text: { uk: 'Зливний бачок унітазу без зупину гуде й вібрує. Спустіть воду, щоб збити тиск.', en: 'The toilet tank is buzzing and vibrating endlessly. Flush it to relieve pressure.', ru: 'Сливной бачок унитаза без остановки гудит и вибрирует. Спустите воду, чтобы сбить давление.' }, actionText: { uk: 'Спустити воду', en: 'Flush toilet', ru: 'Спустить воду' }, isTrap: false },
+            { room: 'bathroom', text: { uk: '⚠️ ПАСТКА? З-за шторки для душу стирчить бліда рука і тримає золоту монету. Взяти монету?', en: '⚠️ TRAP? A pale hand holds a gold coin from behind the shower curtain. Take it?', ru: '⚠️ ЛОВУШКА? Из-за шторки для душа торчит бледная рука и держит золотую монету. Взять монету?' }, actionText: { uk: 'ВЗЯТИ МОНЕТУ', en: 'TAKE THE COIN', ru: 'ВЗЯТЬ МОНЕТУ' }, isTrap: true },
+            { room: 'bathroom', text: { uk: 'Зубні щітки в стаканчику почали дивно плавитися. Викиньте їх у смітник.', en: 'The toothbrushes are melting strangely. Throw them into the trash bin.', ru: 'Зубные щётки в стаканчике начали странно плавиться. Выбросьте их в мусорку.' }, actionText: { uk: 'Викинути щітки', en: 'Throw brushes away', ru: 'Выбросить щётки' }, isTrap: false },
+
+            // LIVING ROOM (8)
+            { room: 'livingroom', text: { uk: 'Телевізор сам увімкнувся і показує білий шум. Висмикніть шнур із розетки!', en: 'The TV turned on showing white noise. Pull the plug out!', ru: 'Телевизор сам включился и показывает белый шум. Выдерните шнур из розетки!' }, actionText: { uk: 'Вимкнути з розетки', en: 'Unplug the TV', ru: 'Выключить из розетки' }, isTrap: false },
+            { room: 'livingroom', text: { uk: '⚠️ ПАСТКА? На люстрі висить зашморг, що плавно гойдається. Просунути в нього голову?', en: '⚠️ TRAP? A noose is hanging from the chandelier, swaying gently. Put your head in?', ru: '⚠️ ЛОВУШКА? На люстре висит плавно качающаяся петля. Просунуть в неё голову?' }, actionText: { uk: 'ПРОСУНУТИ ГОЛОВУ', en: 'PUT HEAD IN NOOSE', ru: 'ПРОСУНУТЬ ГОЛОВУ' }, isTrap: true },
+            { room: 'livingroom', text: { uk: 'Старе крісло-гойдалка почало шалено рухатися саме по собі. Зупиніть його рух.', en: 'The old rocking chair is moving violently on its own. Stop it.', ru: 'Старое кресло-качалка начало бешено двигаться само по себе. Остановите его движение.' }, actionText: { uk: 'Зупинити крісло', en: 'Stop rocking chair', ru: 'Остановить кресло' }, isTrap: false },
+            { room: 'livingroom', text: { uk: '⚠️ ПАСТКА? На журнальному столику стоїть чашка з гарячим чаєм, хоча ви його не заварювали. Випити чай?', en: '⚠️ TRAP? A cup of hot tea is on the table, but you didn\'t brew it. Drink it?', ru: '⚠️ ЛОВУШКА? На журнальном столике стоит чашка с горячим чаем, хотя вы его не заваривали. Выпить чай?' }, actionText: { uk: 'ВИПИТИ ЧАЙ', en: 'DRINK THE TEA', ru: 'ВЫПИТЬ ЧАЙ' }, isTrap: true },
+            { room: 'livingroom', text: { uk: 'Книга на полиці раптом загорілася зеленим полум\'ям. Захлопніть її обкладинку.', en: 'A book on the shelf burst into green flames. Slam it shut.', ru: 'Книга на полке вдруг загорелась зелёным пламенем. Захлопните её обложку.' }, actionText: { uk: 'Захлопнути книгу', en: 'Slam book shut', ru: 'Захлопнуть книгу' }, isTrap: false },
+            { room: 'livingroom', text: { uk: '⚠️ ПАСТКА? З кутка кімнати лунає голос вашої мами, яка кличе вас підійти ближче. Підійти?', en: '⚠️ TRAP? Your mother\'s voice calls you from the dark corner. Approach?', ru: '⚠️ ЛОВУШКА? Из угла комнаты доносится голос вашей мамы, которая зовёт вас подойти ближе. Подойти?' }, actionText: { uk: 'ПІДІЙТИ НА ГОЛОС', en: 'APPROACH VOICE', ru: 'ПОДОЙТИ НА ГОЛОС' }, isTrap: true },
+            { room: 'livingroom', text: { uk: 'Клавіші старого фортепіано самі натискаються, видаючи жахливий гул. Закрийте кришку.', en: 'The piano keys are pressing down themselves, generating a horrific drone. Close the lid.', ru: 'Клавиши старого фортепиано сами нажимаются, издавая ужасный гул. Закройте крышку.' }, actionText: { uk: 'Закрити кришку', en: 'Close piano lid', ru: 'Закрыть крышку' }, isTrap: false },
+            { room: 'livingroom', text: { uk: 'Радіоприймач шипить і транслює чиїсь похорони. Покрутіть ручку частоти.', en: 'The radio static broadcasts someone\'s funeral. Turn the frequency knob.', ru: 'Радиоприёмник шипит и транслирует чьи-то похороны. Покрутите ручку частоты.' }, actionText: { uk: 'Змінити частоту', en: 'Change frequency', ru: 'Изменить частоту' }, isTrap: false }
+        ];
+
+        let score = 0, fear = 0, battery = 100;
+        let currentRoom = 'corridor', isDoorOpen = false, gameActive = false, isWaitingForNextTask = false;
+        let currentStepNumber = 1, gameTasksSequence = [];
+        let chosenApartment = 1, chosenDifficulty = 'easy', totalStepsForDifficulty = 20, configBatteryDrain = 1, configFearGain = 1;
+
+        const apartmentRooms = {
+            1: ['corridor', 'kitchen', 'bedroom', 'bathroom'],
+            2: ['corridor', 'kitchen', 'bedroom', 'bathroom', 'livingroom'],
+            3: ['corridor', 'kitchen', 'bedroom', 'bathroom', 'livingroom', 'battery']
+        };
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`lang-btn-${lang}`).classList.add('active');
+            translateStaticMenu();
+            if (gameActive) {
+                buildMapUI();
+                checkCurrentTaskState();
+                updateStaticGameLabels();
+            }
+        }
+
+        function translateStaticMenu() {
+            const t = i18n[currentLang];
+            document.getElementById('menu-main-title').innerText = t.mainTitle;
+            document.getElementById('step1-title').innerText = t.step1;
+            document.getElementById('step2-title').innerText = t.step2;
+            document.getElementById('apt-btn-1').innerText = t.apt + "1";
+            document.getElementById('apt-btn-2').innerText = t.apt + "2";
+            document.getElementById('apt-btn-3').innerText = t.apt + "3";
+            document.getElementById('diff-btn-easy').innerText = t.easy;
+            document.getElementById('diff-btn-medium').innerText = t.medium;
+            document.getElementById('diff-btn-hardcore').innerText = t.hardcore;
+            document.getElementById('next-btn-text').innerText = t.next;
+            document.getElementById('back-btn-text').innerText = t.back;
+            document.getElementById('start-btn-text').innerText = t.play;
+            document.getElementById('btn-restart-1').innerText = t.restartBtn;
+            document.getElementById('btn-restart-2').innerText = t.restartBtn;
+            document.getElementById('btn-restart-3').innerText = t.winBtn;
+            document.getElementById('darkness-title').innerText = t.darkTitle;
+            document.getElementById('darkness-desc').innerText = t.darkDesc;
+            document.getElementById('win-title').innerText = t.winTitle;
+        }
+
+        function updateStaticGameLabels() {
+            const t = i18n[currentLang];
+            document.getElementById('progress-label').innerText = t.progress;
+            document.getElementById('label-fear').innerText = t.fear;
+            document.getElementById('label-battery').innerText = t.battery;
+            document.getElementById('game-title').innerText = t.gameTitle.replace('{num}', chosenApartment);
+        }
+
+        function goToStep(stepNum) {
+            document.getElementById('step-apartment-view').style.display = (stepNum === 1) ? 'flex' : 'none';
+            document.getElementById('step-difficulty-view').style.display = (stepNum === 2) ? 'flex' : 'none';
+        }
+
+        function selectApartment(num) {
+            chosenApartment = num;
+            [1, 2, 3].forEach(i => document.getElementById(`apt-btn-${i}`).classList.remove('active'));
+            document.getElementById(`apt-btn-${num}`).classList.add('active');
+        }
+
+        function selectDifficulty(level) {
+            chosenDifficulty = level;
+            ['easy', 'medium', 'hardcore'].forEach(lvl => document.getElementById(`diff-btn-${lvl}`).classList.remove('active'));
+            document.getElementById(`diff-btn-${level}`).classList.add('active');
+        }
+
+        function buildMapUI() {
+            const mapContainer = document.getElementById('apartment-map');
+            mapContainer.innerHTML = ''; 
+            mapContainer.className = (chosenApartment === 1) ? 'grid-apt1' : 'grid-apt-default';
+            
+            const roomsList = apartmentRooms[chosenApartment];
+            const t = i18n[currentLang];
+            const rm = roomLoc[currentLang];
+
+            roomsList.forEach(roomKey => {
+                if(roomKey === 'battery') return; 
+                const roomDiv = document.createElement('div');
+                roomDiv.className = 'room' + (currentRoom === roomKey ? ' active-room' : '');
+                roomDiv.id = `room-${roomKey}`;
+                roomDiv.onclick = () => selectRoom(roomKey);
+                roomDiv.innerHTML = `
+                    <span class="room-title">${rm[roomKey].toUpperCase()}</span>
+                    <span style="font-size:0.75rem; color:#666;">${t.enter}</span>
+                `;
+                mapContainer.appendChild(roomDiv);
+            });
+
+            if (roomsList.includes('battery')) {
+                const battDiv = document.createElement('div');
+                battDiv.className = 'room' + (currentRoom === 'battery' ? ' active-room' : '');
+                battDiv.id = 'room-battery';
+                battDiv.onclick = () => selectRoom('battery');
+                battDiv.innerHTML = `
+                    <span class="room-title" style="color:#00ff66;">📋 ${rm['battery'].toUpperCase()}</span>
+                    <span style="font-size:0.75rem; color:#00ff66;">${t.chest}</span>
+                `;
+                mapContainer.appendChild(battDiv);
+            }
+
+            const doorDiv = document.createElement('div');
+            doorDiv.id = 'front-door';
+            doorDiv.className = (chosenApartment === 1) ? 'door-apt1' : 'door-apt-default';
+            doorDiv.onclick = toggleFrontDoor;
+            
+            const doorStateStr = isDoorOpen ? t.doorOpen : t.doorClosed;
+            const doorColor = isDoorOpen ? '#ff3333' : '#00ff66';
+            doorDiv.innerHTML = `${t.doorLabel} <span id="door-state-text" style="color:${doorColor}; margin-left:5px;">${doorStateStr}</span>`;
+            mapContainer.appendChild(doorDiv);
+        }
+
+        function showSetupScreen() {
+            document.getElementById('lang-wrapper-panel').style.display = 'flex';
+            document.getElementById('screamer-screen').style.display = 'none';
+            document.getElementById('darkness-screen').style.display = 'none';
+            document.getElementById('win-screen').style.display = 'none';
+            goToStep(1);
+            document.getElementById('setup-screen').style.display = 'flex';
+        }
+
+        function startGame() {
+            if (chosenDifficulty === 'easy') { totalStepsForDifficulty = 20; configBatteryDrain = 1.0; configFearGain = 1.0; }
+            else if (chosenDifficulty === 'medium') { totalStepsForDifficulty = 28; configBatteryDrain = 2.4; configFearGain = 2.4; }
+            else if (chosenDifficulty === 'hardcore') { totalStepsForDifficulty = 35; configBatteryDrain = 4.2; configFearGain = 4.2; }
+
+            document.getElementById('max-score-display').innerText = totalStepsForDifficulty;
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('lang-wrapper-panel').style.display = 'none'; 
+            
+            updateStaticGameLabels();
+            buildMapUI();
+            initGame();
+        }
+
+        function initGame() {
+            score = 0; fear = 0; battery = 100; currentRoom = 'corridor';
+            isDoorOpen = false; gameActive = true; isWaitingForNextTask = false; currentStepNumber = 1;
+            
+            const allowedRooms = apartmentRooms[chosenApartment];
+            let basePool = JSON.parse(JSON.stringify(tasksRawPool));
+            
+            basePool.forEach(task => {
+                if (!allowedRooms.includes(task.room)) {
+                    let filterRooms = allowedRooms.filter(r => r !== 'battery');
+                    task.room = filterRooms[Math.floor(Math.random() * filterRooms.length)];
+                }
+            });
+
+            for (let i = basePool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [basePool[i], basePool[j]] = [basePool[j], basePool[i]];
+            }
+
+            gameTasksSequence = basePool.slice(0, totalStepsForDifficulty);
+            document.getElementById('score').innerText = score;
+            setButtonsDisabled(false);
+            updateStatusBars();
+            selectRoom('corridor');
+            startTickTimer();
+        }
+
+        let gameInterval;
+        function startTickTimer() {
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(() => {
+                if (!gameActive) return;
+                if (currentRoom !== 'battery') battery -= configBatteryDrain; 
+                fear += (battery < 35 || isDoorOpen) ? (configFearGain * 2.0) : configFearGain;
+                if (battery < 0) battery = 0;
+                if (fear > 100) fear = 100;
+                updateStatusBars();
+                checkLoseConditions();
+            }, 1000);
+        }
+
+        function updateStatusBars() {
+            document.getElementById('fear-text').innerText = Math.floor(fear) + '%';
+            document.getElementById('fear-fill').style.width = fear + '%';
+            document.getElementById('battery-text').innerText = Math.floor(battery) + '%';
+            document.getElementById('battery-fill').style.width = battery + '%';
+        }
+
+        function selectRoom(roomName) {
+            if (!gameActive || isWaitingForNextTask) return;
+            currentRoom = roomName;
+            document.querySelectorAll('.room').forEach(r => r.classList.remove('active-room'));
+            if(document.getElementById(`room-${roomName}`)) document.getElementById(`room-${roomName}`).classList.add('active-room');
+            checkCurrentTaskState();
+        }
+
+        function checkCurrentTaskState() {
+            const mainBtn = document.getElementById('main-action-btn');
+            const skipBtn = document.getElementById('skip-action-btn');
+            const infoLabel = document.getElementById('task-info-topright');
+            const t = i18n[currentLang];
+            const rm = roomLoc[currentLang];
+            
+            if (currentRoom === 'battery') {
+                infoLabel.innerText = t.target + " " + rm['battery'];
+                document.getElementById('task-text').innerText = t.batteryChestText;
+                mainBtn.innerText = t.batteryChestBtn;
+                mainBtn.style.display = 'block';
+                skipBtn.style.display = 'none';
+                setButtonsDisabled(false);
+                return;
+            }
+
+            const activeTask = gameTasksSequence[currentStepNumber - 1];
+            infoLabel.innerText = `${t.target} ${rm[activeTask.room]} ${activeTask.isTrap ? '⚠️' : ''}`;
+            skipBtn.style.display = 'block';
+            skipBtn.innerText = t.skipActionDefault;
+
+            if (currentRoom === activeTask.room) {
+                document.getElementById('task-text').innerText = `[${t.stepWord} ${currentStepNumber}/${totalStepsForDifficulty}] ` + activeTask.text[currentLang];
+                mainBtn.innerText = activeTask.actionText[currentLang].toUpperCase();
+                mainBtn.style.display = 'block';
+                setButtonsDisabled(false);
+            } else {
+                document.getElementById('task-text').innerText = t.calm.replace('{r}', rm[activeTask.room].toUpperCase());
+                mainBtn.style.display = 'none';
+                skipBtn.style.display = 'none';
+            }
+        }
+
+        function completeTask() {
+            if (!gameActive || isWaitingForNextTask) return;
+            const t = i18n[currentLang];
+
+            if (currentRoom === 'battery') {
+                battery = 100; fear = Math.max(0, fear - 8); updateStatusBars();
+                document.getElementById('task-text').innerText = t.batteryRenewed;
+                setButtonsDisabled(true); triggerDelay(); return;
+            }
+
+            const activeTask = gameTasksSequence[currentStepNumber - 1];
+
+            if (activeTask.isTrap) {
+                fear = Math.min(100, fear + 35); updateStatusBars();
+                document.getElementById('task-text').innerText = t.trapTriggered;
+            } else {
+                score++; document.getElementById('score').innerText = score;
+                fear = Math.max(0, fear - 12);
+                if (chosenApartment < 3 && Math.random() < 0.35) {
+                    battery = Math.min(100, battery + 30);
+                    document.getElementById('task-text').innerText = t.taskClearedBattery;
+                } else {
+                    document.getElementById('task-text').innerText = t.taskCleared;
+                }
+                updateStatusBars();
+            }
+            setButtonsDisabled(true); checkLoseConditions(); if (gameActive) nextStep();
+        }
+
+        function skipTask() {
+            if (!gameActive || isWaitingForNextTask || currentRoom === 'battery') return;
+            const t = i18n[currentLang];
+            const activeTask = gameTasksSequence[currentStepNumber - 1];
+
+            if (activeTask.isTrap) {
+                score++; document.getElementById('score').innerText = score;
+                fear = Math.max(0, fear - 10); updateStatusBars();
+                document.getElementById('task-text').innerText = t.skipTrap;
+            } else {
+                fear = Math.min(100, fear + 25); updateStatusBars();
+                document.getElementById('task-text').innerText = t.skipNormal;
+            }
+            setButtonsDisabled(true); checkLoseConditions(); if (gameActive) nextStep();
+        }
+
+        function nextStep() {
+            currentStepNumber++;
+            if (currentStepNumber > totalStepsForDifficulty) {
+                setTimeout(() => { endGame('win'); }, 1500);
+            } else { triggerDelay(); }
+        }
+
+        function triggerDelay() {
+            isWaitingForNextTask = true;
+            setTimeout(() => { isWaitingForNextTask = false; checkCurrentTaskState(); }, 1500);
+        }
+
+        function setButtonsDisabled(state) {
+            document.getElementById('main-action-btn').disabled = state;
+            document.getElementById('skip-action-btn').disabled = state;
+        }
+
+        function toggleFrontDoor() {
+            if (!gameActive) return;
+            isDoorOpen = !isDoorOpen;
+            const doorText = document.getElementById('door-state-text');
+            const t = i18n[currentLang];
+            
+            if (isDoorOpen) {
+                doorText.innerText = t.doorOpen; doorText.style.color = '#ff3333';
+                fear += 15; updateStatusBars();
+            } else {
+                doorText.innerText = t.doorClosed; doorText.style.color = '#00ff66';
+            }
+        }
+
+        function checkLoseConditions() {
+            if (fear >= 100) endGame('screamer');
+            else if (battery <= 0) endGame('darkness');
+        }
+
+        function endGame(status) {
+            gameActive = false; clearInterval(gameInterval);
+            const t = i18n[currentLang];
+            
+            if (status === 'screamer') {
+                const pool = monstersPool[currentLang];
+                const randomMonster = pool[Math.floor(Math.random() * pool.length)];
+                
+                const monsterElement = document.getElementById('screamer-monster');
+                monsterElement.innerText = randomMonster.emoji;
+                monsterElement.style.color = randomMonster.color;
+                monsterElement.style.textShadow = `0 0 40px ${randomMonster.color}`;
+                
+                document.getElementById('screamer-title').innerText = randomMonster.title;
+                document.getElementById('screamer-desc').innerText = randomMonster.desc;
+                document.getElementById('screamer-screen').style.display = 'flex';
+                try {
+                    document.getElementById('screamer-sound').play();
+                    document.getElementById('screamer-scream').play();
+                } catch(e){}
+            } else if (status === 'darkness') {
+                document.getElementById('darkness-screen').style.display = 'flex';
+            } else if (status === 'win') {
+                document.getElementById('win-desc').innerText = t.winDesc.replace('{steps}', totalStepsForDifficulty).replace('{apt}', chosenApartment);
+                document.getElementById('win-screen').style.display = 'flex';
+            }
+        }
+
+        changeLanguage('uk');
+    </script>
+</body>
+</html>
