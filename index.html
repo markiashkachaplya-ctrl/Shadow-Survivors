@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2D Хорор: Повне Виживання в Квартирах</title>
     <style>
-#task-info-topright {
+        #task-info-topright {
             position: absolute;
             top: -45px; /* Піднято вище */
             right: 0;
@@ -307,6 +307,8 @@
             <button class="select-btn active" id="apt-btn-1" onclick="selectApartment(1)">КВАРТИРА №1</button>
             <button class="select-btn" id="apt-btn-2" onclick="selectApartment(2)">КВАРТИРА №2</button>
             <button class="select-btn" id="apt-btn-3" onclick="selectApartment(3)">КВАРТИРА №3</button>
+            <button class="select-btn" id="apt-btn-4" onclick="selectApartment(4)">КВАРТИРА №4</button>
+            <button class="select-btn" id="apt-btn-5" onclick="selectApartment(5)">КВАРТИРА №5</button>
             
             <div class="nav-menu-group">
                 <button class="nav-menu-btn next-btn" id="next-btn-text" style="flex: 2;" onclick="goToStep(2)">ДАЛІ ➔</button>
@@ -411,10 +413,10 @@
                 batteryChestBtn: "ЗАМІНИТИ БАТАРЕЙКИ",
                 batteryRenewed: "Батарейки оновлено! Повертайтеся.",
                 trapTriggered: "❌ ВИ ПОПАЛИСЯ! Ви піддалися на провокацію сутності. Рівень страху критично зріс!",
-                taskCleared: "✅ Успішно ліквідовано! Аналізуємо ситуацію далі...",
-                taskClearedBattery: "✅ Ліквідовано! Також у кутку ви знайшли робочі БАТАРЕЙКИ (+30% заряду)!",
+                taskCleared: "✅ Успішно ліквідовано! Аналізуємо 상황 далі...",
+                taskClearedBattery: "✅ Ліквідовано! Також у кутку вы знайшли робочі БАТАРЕЙКИ (+30% заряду)!",
                 skipTrap: "🛡️ ОТРЕЗВІННЯ: Ви проігнорували пастку сутності. Розумний вибір!",
-                skipNormal: "😱 ТЕРОР: Ви залишили активну аномалію без уваги. Стає набагато страшніше...",
+                skipNormal: "😱 ТЕРОР: Ви залишили аномалію без уваги. Стає набагато страшніше...",
                 winTitle: "ВИ ВИЖИЛИ!",
                 winDesc: "Неймовірно! Ви пройшли всі {steps} унікальних подій у Квартирі №{apt} без жодного повтору, розгадали пастки та дочекалися світанку!",
                 winBtn: "ГРАТИ ЗНОВУ",
@@ -491,7 +493,7 @@
                 batteryChestBtn: "ЗАМЕНИТЬ БАТАРЕЙКИ",
                 batteryRenewed: "Батарейки обновлены! Возвращайтесь.",
                 trapTriggered: "❌ ВЫ ПОПАЛИСЬ! Вы поддались на провокацию сущности. Уровень страха критически вырос!",
-                taskCleared: "✅ Успешно ликвидировано! Анализируем ситуацию дальше...",
+                taskCleared: "✅ Усчешно ликвидировано! Анализируем ситуацию дальше...",
                 taskClearedBattery: "✅ Ликвидировано! Также в углу вы нашли рабочие БАТАРЕЙКИ (+30% заряда)!",
                 skipTrap: "🛡️ ОТРЕЗВЛЕНИЕ: Вы проигнорировали ловушку сущности. Разумный выбор!",
                 skipNormal: "😱 ТЕРРОР: Вы оставили активную аномалию без внимания. Становится гораздо страшнее...",
@@ -508,9 +510,9 @@
         };
 
         const roomLoc = {
-            uk: { corridor: 'Коридор', kitchen: 'Кухня', bedroom: 'Спальня', bathroom: 'Ванна кімната', livingroom: 'Вітальня', battery: 'Комод' },
-            en: { corridor: 'Corridor', kitchen: 'Kitchen', bedroom: 'Bedroom', bathroom: 'Bathroom', livingroom: 'Living Room', battery: 'Chest' },
-            ru: { corridor: 'Коридор', kitchen: 'Кухня', bedroom: 'Спальня', bathroom: 'Ванная комната', livingroom: 'Гостиная', battery: 'Комод' }
+            uk: { corridor: 'Коридор', kitchen: 'Кухня', bedroom: 'Спальня', bathroom: 'Ванна кімната', livingroom: 'Вітальня', battery: 'Комод', pantry: 'Комора', balcony: 'Балкон' },
+            en: { corridor: 'Corridor', kitchen: 'Kitchen', bedroom: 'Bedroom', bathroom: 'Bathroom', livingroom: 'Living Room', battery: 'Chest', pantry: 'Pantry', balcony: 'Balcony' },
+            ru: { corridor: 'Коридор', kitchen: 'Кухня', bedroom: 'Спальня', bathroom: 'Ванная комната', livingroom: 'Гостиная', battery: 'Комод', pantry: 'Кладовая', balcony: 'Балкон' }
         };
 
         const monstersPool = {
@@ -532,7 +534,7 @@
         };
 
         const tasksRawPool = [
-            // CORRIDOR (7)
+            // CORRIDOR (9)
             { room: 'corridor', text: { uk: 'У коридорі блимає лампочка. Треба закрутити її сильніше!', en: 'A light bulb is flickering in the corridor. Screw it in tighter!', ru: 'В коридоре мигает лампочка. Нужно закрутить её сильнее!' }, actionText: { uk: 'Закрутити лампочку', en: 'Screw in light bulb', ru: 'Закрутить лампочку' }, isTrap: false },
             { room: 'corridor', text: { uk: '⚠️ ПАСТКА? Хтось плаче за вхідними ДВЕРИМА і благає відчинити. Відчинити двері?', en: '⚠️ TRAP? Someone is crying behind the FRONT DOOR, begging to enter. Open it?', ru: '⚠️ ЛОВУШКА? Кто-то плачет за входной ДВЕРЬЮ и умоляет открыть. Открыть дверь?' }, actionText: { uk: 'ВІДЧИНИТИ ДВЕРІ', en: 'OPEN THE DOOR', ru: 'ОТКРЫТЬ ДВЕРЬ' }, isTrap: true },
             { room: 'corridor', text: { uk: 'Шпалери на стіні дивно здулися. Притисніть їх, поки вони не тріснули.', en: 'The wallpaper is bulging strangely. Press it down before it bursts.', ru: 'Обои на стене странно вздулись. Прижмите их, пока они не треснули.' }, actionText: { uk: 'Притиснути шпалери', en: 'Press wallpaper', ru: 'Прижать обои' }, isTrap: false },
@@ -540,8 +542,10 @@
             { room: 'corridor', text: { uk: 'Старий настінний годинник пішов назад! Негайно зупиніть маятник.', en: 'The old wall clock is running backwards! Stop the pendulum immediately.', ru: 'Старые настенные часы пошли назад! Немедленно остановите маятник.' }, actionText: { uk: 'Зупинити маятник', en: 'Stop pendulum', ru: 'Остановить маятник' }, isTrap: false },
             { room: 'corridor', text: { uk: '⚠️ ПАСТКА? Дзеркало шепоче ваше ім\'я і просить підійти та торкнутися скла. Торкнутися?', en: '⚠️ TRAP? The mirror whispers your name and asks you to touch it. Touch it?', ru: '⚠️ ЛОВУШКА? Зеркало шепчет ваше имя и просит подойти и коснуться стекла. Коснуться?' }, actionText: { uk: 'ТОРКНУТИСЯ ДЗЕРКАЛА', en: 'TOUCH MIRROR', ru: 'КОСНУТЬСЯ ЗЕРКАЛА' }, isTrap: true },
             { room: 'corridor', text: { uk: 'З вічка вхідних дверей сочиться чорна смола. Протріть її ганчіркою.', en: 'Black ooze is leaking from the peephole. Wipe it off with a rag.', ru: 'Из глазка входной двери сочится чёрная смола. Протрите её тряпкой.' }, actionText: { uk: 'Протерти вічко', en: 'Wipe peephole', ru: 'Протереть глазок' }, isTrap: false },
+            { room: 'corridor', text: { uk: 'Старий килим у коридорі ворушиться, ніби під ним щось повзає. Притисніть його ногою.', en: 'The old rug in the corridor is moving as if something is crawling underneath. Press it with your foot.', ru: 'Старый ковер в коридоре шевелится, будто под ним кто-то ползает. Прижмите его ногой.' }, actionText: { uk: 'Притиснути килим', en: 'Press the rug', ru: 'Прижать ковер' }, isTrap: false },
+            { room: 'corridor', text: { uk: '⚠️ ПАСТКА? Зі стелі коридору звисає золотий ланцюжок. Потягнути за нього?', en: '⚠️ TRAP? A golden chain hangs from the corridor ceiling. Pull it?', ru: '⚠️ ЛОВУШКА? С потолка коридора свисает золотая цепочка. Потянуть за неё?' }, actionText: { uk: 'ПОТЯГНУТИ ЛАНЦЮЖОК', en: 'PULL THE CHAIN', ru: 'ПОТЯНУТЬ ЦЕПОЧКУ' }, isTrap: true },
 
-            // KITCHEN (7)
+            // KITCHEN (9)
             { room: 'kitchen', text: { uk: 'З холодильника тече червона рідина. Терміново витріть підлогу.', en: 'Red liquid is leaking from the fridge. Wipe the floor immediately.', ru: 'Из холодильника течёт красная жидкость. Срочно вытрите пол.' }, actionText: { uk: 'Витерти підлогу', en: 'Wipe the floor', ru: 'Вытереть пол' }, isTrap: false },
             { room: 'kitchen', text: { uk: '⚠️ ПАСТКА? На столі лежить красивий ніж з вашим ім\'ям. Взяти його до рук?', en: '⚠️ TRAP? A beautiful knife with your name on it is on the table. Pick it up?', ru: '⚠️ ЛОВУШКА? На столе лежит красивый нож с вашим именем. Взять его в руки?' }, actionText: { uk: 'ВЗЯТИ НІЖ', en: 'TAKE THE KNIFE', ru: 'ВЗЯТЬ НОЖ' }, isTrap: true },
             { room: 'kitchen', text: { uk: 'Газова конфорка спалахнула синім полум\'ям сама по собі. Вимкніть її.', en: 'The gas burner ignited on its own. Turn it off.', ru: 'Газовая конфорка загорелась сама по себе. Выключите её.' }, actionText: { uk: 'Вимкнути конфорку', en: 'Turn off burner', ru: 'Выключить конфорку' }, isTrap: false },
@@ -549,8 +553,10 @@
             { room: 'kitchen', text: { uk: 'Мікрохвильовка увімкнулася порожньою та іскрить. Вимкніть її з мережі.', en: 'The microwave turned on empty and is sparking. Unplug it.', ru: 'Микроволновка включилась пустой и искрит. Выключите её из сети.' }, actionText: { uk: 'Вимкнути з розетки', en: 'Unplug microwave', ru: 'Выключить из розетки' }, isTrap: false },
             { room: 'kitchen', text: { uk: '⚠️ ПАСТКА? З вентиляції капає солодкий сироп. Спробувати його на смак?', en: '⚠️ TRAP? Sweet syrup is dripping from the vent. Taste it?', ru: '⚠️ ЛОВУШКА? Из вентиляции капает сладкий сироп. Попробовать его на вкус?' }, actionText: { uk: 'СПРОБУВАТИ СИРОП', en: 'TASTE THE SYRUP', ru: 'ПОПРОБОВАТЬ СИРОП' }, isTrap: true },
             { room: 'kitchen', text: { uk: 'Шафка з посудом почала сильно трястися. Притримайте дверцята.', en: 'The dish cabinet is shaking violently. Hold the doors closed.', ru: 'Шкафчик с посудой начал сильно трястись. Придержите дверцу.' }, actionText: { uk: 'Приримати дверцята', en: 'Hold cabinet doors', ru: 'Придержать дверцу' }, isTrap: false },
+            { room: 'kitchen', text: { uk: 'Усі кухонні шухляди раптово висунулися самі. Засуньте їх назад.', en: 'All kitchen drawers suddenly slid out on their own. Push them back in.', ru: 'Все кухонные ящики внезапно выдвинулись сами. Задвиньте их обратно.' }, actionText: { uk: 'Засунути шухляди', en: 'Push drawers back', ru: 'Задвинуть ящики' }, isTrap: false },
+            { room: 'kitchen', text: { uk: '⚠️ ПАСТКА? На плиті закипів старий чайник, видаючи солодкий аромат парів. Вдихнути аромат глибше?', en: '⚠️ TRAP? An old kettle boiled on the stove, emitting a sweet aroma. Inhale the scent deeply?', ru: '⚠️ ЛОВУШКА? На плите закипел старый чайник, издавая сладкий аромат пара. Вдохнуть аромат глубже?' }, actionText: { uk: 'ВДИХНУТИ ПАР', en: 'INHALE THE STEAM', ru: 'ВДОХНУТЬ ПАР' }, isTrap: true },
 
-            // BEDROOM (7)
+            // BEDROOM (9)
             { room: 'bedroom', text: { uk: 'З-під ліжка чути чиєсь важке дихання. Посвітіть туди ліхтариком.', en: 'Heavy breathing is coming from under the bed. Shine your flashlight there.', ru: 'Из-под кровати слышно чьё-то тяжёлое дыхание. Посветите туда фонариком.' }, actionText: { uk: 'Посвітити під ліжко', en: 'Shine under bed', ru: 'Посветить под кровать' }, isTrap: false },
             { room: 'bedroom', text: { uk: '⚠️ ПАСТКА? На ліжку дзвонить ваш телефон, але виклик йде від ВАС самих. Відповісти?', en: '⚠️ TRAP? Your phone rings on the bed, but the caller ID is YOURSELF. Answer?', ru: '⚠️ ЛОВУШКА? На кровати звонит ваш телефон, но вызов идёт от ВАС самих. Ответить?' }, actionText: { uk: 'ВІДПОВІСТИ НА ДЗВІНОК', en: 'ANSWER THE CALL', ru: 'ОТВЕТИТЬ НА ЗВОНОК' }, isTrap: true },
             { room: 'bedroom', text: { uk: 'Дверцята шафи повільно відчиняються самі. Зачиніть їх на засув.', en: 'The wardrobe door is slowly opening by itself. Lock it shut.', ru: 'Дверца шкафа медленно открывается сама. Закройте её на засов.' }, actionText: { uk: 'Зачинити шафу', en: 'Close wardrobe', ru: 'Закрыть шкаф' }, isTrap: false },
@@ -558,8 +564,10 @@
             { room: 'bedroom', text: { uk: 'Вікно само по собі відчинилося від крижаного вітру. Закрийте кватирку.', en: 'The window flew open from an icy wind. Close it tightly.', ru: 'Окно само по себе открылось от леденящего ветра. Закройте форточку.' }, actionText: { uk: 'Закрити вікно', en: 'Close window', ru: 'Закрыть окно' }, isTrap: false },
             { room: 'bedroom', text: { uk: '⚠️ ПАСТКА? Ковдра на ліжку виглядає так, ніби під нею хтось лежить і кличе вас спати. Лягти поруч?', en: '⚠️ TRAP? The blanket shapes like a human body inviting you to sleep. Lie down?', ru: '⚠️ ЛОВУШКА? Одеяло на кровати выглядит так, будто под ним кто-то лежит и зовёт вас спать. Лечь рядом?' }, actionText: { uk: 'ЛЯГТИ В ЛІЖКО', en: 'LIE DOWN IN BED', ru: 'ЛЕЧЬ В КРОВАТЬ' }, isTrap: true },
             { room: 'bedroom', text: { uk: 'Картина на стіні перевернулися догори дриґом. Поверніть її у правильне положення.', en: 'The wall painting flipped upside down. Straighten it.', ru: 'Картина на стене перевернулась вверх тормашками. Верните её в правильное положение.' }, actionText: { uk: 'Вирівняти картину', en: 'Straighten painting', ru: 'Выровнять картину' }, isTrap: false },
+            { room: 'bedroom', text: { uk: 'Паркет під ліжком починає покриватися інеєм. Протріть підлогу сухою ганчіркою.', en: 'The parquet under the bed starts freezing over. Wipe the floor with a dry rag.', ru: 'Паркет под кроватью начинает покрываться инеем. Протрите пол сухой тряпкой.' }, actionText: { uk: 'Протерти паркет', en: 'Wipe parquet', ru: 'Протереть паркет' }, isTrap: false },
+            { room: 'bedroom', text: { uk: '⚠️ ПАСТКА? На тумбочці з\'явилася старовинна шкатулка, що грає колискову. Відкрити її?', en: '⚠️ TRAP? An antique music box playing a lullaby appeared on the nightstand. Open it?', ru: '⚠️ ЛОВУШКА? На тумбочке появилась старинная шкатулка, играющая колыбельную. Открыть её?' }, actionText: { uk: 'ВІДКРИТИ ШКАТУЛКУ', en: 'OPEN MUSIC BOX', ru: 'ОТКРЫТЬ ШКАТУЛКУ' }, isTrap: true },
 
-            // BATHROOM (7)
+            // BATHROOM (9)
             { room: 'bathroom', text: { uk: 'Кран увімкнувся сам і ванна наповнюється іржавою водою. Закрутіть кран.', en: 'The tap turned on by itself, filling the tub with rusty water. Close it.', ru: 'Кран включился сам и ванна наполняется ржавой водой. Закрутите кран.' }, actionText: { uk: 'Закрутити кран', en: 'Close the tap', ru: 'Закрутить кран' }, isTrap: false },
             { room: 'bathroom', text: { uk: '⚠️ ПАСТКА? З зі зливного отвору ванни вилазить чорне довге волосся. Потягнути за нього?', en: '⚠️ TRAP? Long black hair is crawling out of the bathtub drain. Pull it?', ru: '⚠️ ЛОВУШКА? Из сливного отверстия ванны лезут чёрные длинные волосы. Потянуть за них?' }, actionText: { uk: 'ПОТЯГНУТИ ЗА ВОЛОССЯ', en: 'PULL THE HAIR', ru: 'ПОТЯНУТЬ ЗА ВОЛОСЫ' }, isTrap: true },
             { room: 'bathroom', text: { uk: 'Дзеркало над раковиною повністю запітніло, хоча вода холодна. Протріть його.', en: 'The mirror fogged up completely despite the cold water. Wipe it clean.', ru: 'Зеркало над раковиной полностью запотело, хотя вода холодная. Протрите его.' }, actionText: { uk: 'Протерети дзеркало', en: 'Wipe mirror', ru: 'Протереть зеркало' }, isTrap: false },
@@ -567,8 +575,10 @@
             { room: 'bathroom', text: { uk: 'Зливний бачок унітазу без зупину гуде й вібрує. Спустіть воду, щоб збити тиск.', en: 'The toilet tank is buzzing and vibrating endlessly. Flush it to relieve pressure.', ru: 'Сливной бачок унитаза без остановки гудит и вибрирует. Спустите воду, чтобы сбить давление.' }, actionText: { uk: 'Спустити воду', en: 'Flush toilet', ru: 'Спустить воду' }, isTrap: false },
             { room: 'bathroom', text: { uk: '⚠️ ПАСТКА? З-за шторки для душу стирчить бліда рука і тримає золоту монету. Взяти монету?', en: '⚠️ TRAP? A pale hand holds a gold coin from behind the shower curtain. Take it?', ru: '⚠️ ЛОВУШКА? Из-за шторки для душа торчит бледная рука и держит золотую монету. Взять монету?' }, actionText: { uk: 'ВЗЯТИ МОНЕТУ', en: 'TAKE THE COIN', ru: 'ВЗЯТЬ МОНЕТУ' }, isTrap: true },
             { room: 'bathroom', text: { uk: 'Зубні щітки в стаканчику почали дивно плавитися. Викиньте їх у смітник.', en: 'The toothbrushes are melting strangely. Throw them into the trash bin.', ru: 'Зубные щётки в стаканчике начали странно плавиться. Выбросьте их в мусорку.' }, actionText: { uk: 'Викинути щітки', en: 'Throw brushes away', ru: 'Выбросить щётки' }, isTrap: false },
+            { room: 'bathroom', text: { uk: 'Світло у ванній стало занадто яскравим і тріщить. Вимкніть і увімкніть вимикач.', en: 'The bathroom light became too bright and is buzzing. Toggle the light switch.', ru: 'Свет в ванной стал слишком ярким и трещит. Выключите и включите выключатель.' }, actionText: { uk: 'Перемикнути світло', en: 'Toggle light switch', ru: 'Переключить свет' }, isTrap: false },
+            { room: 'bathroom', text: { uk: '⚠️ ПАСТКА? На дні ванни лежить блискуче дзеркальце, що показує ваше дитинство. Підняти його?', en: '⚠️ TRAP? A shiny small mirror showing your childhood lies at the bottom of the tub. Pick it up?', ru: '⚠️ ЛОВУШКА? На дне ванны лежит блестящее зеркальце, показывающее ваше детство. Поднять его?' }, actionText: { uk: 'ПІДНЯТИ ДЗЕРКАЛЬЦЕ', en: 'PICK UP MIRROR', ru: 'ПОДНЯТЬ ЗЕРКАЛЬЦЕ' }, isTrap: true },
 
-            // LIVING ROOM (8)
+            // LIVING ROOM (10)
             { room: 'livingroom', text: { uk: 'Телевізор сам увімкнувся і показує білий шум. Висмикніть шнур із розетки!', en: 'The TV turned on showing white noise. Pull the plug out!', ru: 'Телевизор сам включился и показывает белый шум. Выдерните шнур из розетки!' }, actionText: { uk: 'Вимкнути з розетки', en: 'Unplug the TV', ru: 'Выключить из розетки' }, isTrap: false },
             { room: 'livingroom', text: { uk: '⚠️ ПАСТКА? На люстрі висить зашморг, що плавно гойдається. Просунути в нього голову?', en: '⚠️ TRAP? A noose is hanging from the chandelier, swaying gently. Put your head in?', ru: '⚠️ ЛОВУШКА? На люстре висит плавно качающаяся петля. Просунуть в неё голову?' }, actionText: { uk: 'ПРОСУНУТИ ГОЛОВУ', en: 'PUT HEAD IN NOOSE', ru: 'ПРОСУНУТЬ ГОЛОВУ' }, isTrap: true },
             { room: 'livingroom', text: { uk: 'Старе крісло-гойдалка почало шалено рухатися саме по собі. Зупиніть його рух.', en: 'The old rocking chair is moving violently on its own. Stop it.', ru: 'Старое кресло-качалка начало бешено двигаться само по себе. Остановите его движение.' }, actionText: { uk: 'Зупинити крісло', en: 'Stop rocking chair', ru: 'Остановить кресло' }, isTrap: false },
@@ -576,7 +586,21 @@
             { room: 'livingroom', text: { uk: 'Книга на полиці раптом загорілася зеленим полум\'ям. Захлопніть її обкладинку.', en: 'A book on the shelf burst into green flames. Slam it shut.', ru: 'Книга на полке вдруг загорелась зелёным пламенем. Захлопните её обложку.' }, actionText: { uk: 'Захлопнути книгу', en: 'Slam book shut', ru: 'Захлопнуть книгу' }, isTrap: false },
             { room: 'livingroom', text: { uk: '⚠️ ПАСТКА? З кутка кімнати лунає голос вашої мами, яка кличе вас підійти ближче. Підійти?', en: '⚠️ TRAP? Your mother\'s voice calls you from the dark corner. Approach?', ru: '⚠️ ЛОВУШКА? Из угла комнаты доносится голос вашей мамы, которая зовёт вас подойти ближе. Подойти?' }, actionText: { uk: 'ПІДІЙТИ НА ГОЛОС', en: 'APPROACH VOICE', ru: 'ПОДОЙТИ НА ГОЛОС' }, isTrap: true },
             { room: 'livingroom', text: { uk: 'Клавіші старого фортепіано самі натискаються, видаючи жахливий гул. Закрийте кришку.', en: 'The piano keys are pressing down themselves, generating a horrific drone. Close the lid.', ru: 'Клавиши старого фортепиано сами нажимаются, издавая ужасный гул. Закройте крышку.' }, actionText: { uk: 'Закрити кришку', en: 'Close piano lid', ru: 'Закрыть крышку' }, isTrap: false },
-            { room: 'livingroom', text: { uk: 'Радіоприймач шипить і транслює чиїсь похорони. Покрутіть ручку частоти.', en: 'The radio static broadcasts someone\'s funeral. Turn the frequency knob.', ru: 'Радиоприёмник шипит и транслирует чьи-то похороны. Покрутите ручку частоты.' }, actionText: { uk: 'Змінити частоту', en: 'Change frequency', ru: 'Изменить частоту' }, isTrap: false }
+            { room: 'livingroom', text: { uk: 'Радіоприймач шипить і транслює чиїсь похорони. Покрутіть ручку частоти.', en: 'The radio static broadcasts someone\'s funeral. Turn the frequency knob.', ru: 'Радиоприёмник шипит и транслирует чьи-то похороны. Покрутите ручку частоты.' }, actionText: { uk: 'Змінити частоту', en: 'Change frequency', ru: 'Изменить частоту' }, isTrap: false },
+            { room: 'livingroom', text: { uk: 'З дивану вилітає хмара пилу, що складається у силует обличчя. Розвійте її руками.', en: 'A cloud of dust flies out of the sofa, forming a face silhouette. Disperse it with your hands.', ru: 'Из дивана вылетает облако пыли, складывающееся в силуэт лица. Развейте его руками.' }, actionText: { uk: 'Розвіяти пил', en: 'Disperse the dust', ru: 'Развеять пыль' }, isTrap: false },
+            { room: 'livingroom', text: { uk: '⚠️ ПАСТКА? Старий настільний глобус почав крутитися сам і вказує на одну точку кров\'ю. Торкнутися цієї точки?', en: '⚠️ TRAP? An old desk globe started spinning on its own, pointing at a spot with blood. Touch it?', ru: '⚠️ ЛОВУШКА? Старый настольный глобус начал крутиться сам и указывает на одну точку кровью. Коснуться этой точки?' }, actionText: { uk: 'ТОРКНУТИСЯ ТОЧКИ', en: 'TOUCH THE SPOT', ru: 'КОСНУТЬСЯ ТОЧКИ' }, isTrap: true },
+
+            // PANTRY (4)
+            { room: 'pantry', text: { uk: 'У коморі щось шурхотить за старими коробками. Перевірте полиці.', en: 'Something is rustling behind old boxes in the pantry. Check the shelves.', ru: 'В кладовой что-то шуршит за старыми коробками. Проверьте полки.' }, actionText: { uk: 'Перевірити полиці', en: 'Check shelves', ru: 'Проверить полки' }, isTrap: false },
+            { room: 'pantry', text: { uk: '⚠️ ПАСТКА? У кутку комори стоїть банка з невідомим червоним варенням і написом "З\'їж мене". Скуштувати?', en: '⚠️ TRAP? A jar of unknown red jam in the corner says "Eat me". Taste it?', ru: '⚠️ ЛОВУШКА? В углу кладовой стоит банка с неизвестным красным вареньем и надписью "Съешь меня". Попробовать?' }, actionText: { uk: 'СКУШТУВАТИ ВАРЕННЯ', en: 'TASTE THE JAM', ru: 'ПОПРОБОВАТЬ ВАРЕНЬЕ' }, isTrap: true },
+            { room: 'pantry', text: { uk: 'Стара консервація в коморі почала дивно здуватися і шипіти. Переставте її на підлогу.', en: 'Old canned food in the pantry is bulging and hissing. Move it to the floor.', ru: 'Старая консервация в кладовой начала странно вздуваться и шипеть. Переставьте её на пол.' }, actionText: { uk: 'Переставити банки', en: 'Move the cans', ru: 'Переставить банки' }, isTrap: false },
+            { room: 'pantry', text: { uk: '⚠️ ПАСТКА? З темряви комори протягується мотузка, що схожа на бліду руку. Вхопитися за неї?', en: '⚠️ TRAP? A rope resembling a pale hand reaches out from the pantry darkness. Grab it?', ru: '⚠️ ЛОВУШКА? Из темноты кладовой протягивается верёвка, похожая на бледную руку. Схватиться за неё?' }, actionText: { uk: 'ВХОПИТИСЯ ЗА МОТУЗКУ', en: 'GRAB THE ROPE', ru: 'СХВАТИТЬСЯ ЗА ВЕРЕВКУ' }, isTrap: true },
+
+            // BALCONY (4)
+            { room: 'balcony', text: { uk: 'Двері на балкон сильно вібрують від вітру. Зачиніть клямку сильніше.', en: 'The balcony door is vibrating violently from the wind. Close the latch tighter.', ru: 'Дверь на балкон сильно вибрирует от ветра. Закройте защёлку сильнее.' }, actionText: { uk: 'Зачинити клямку', en: 'Close the latch', ru: 'Закрыть защёлку' }, isTrap: false },
+            { room: 'balcony', text: { uk: '⚠️ ПАСТКА? За склом балкона стоїть силует вашого друга і махає рукою, просячи впустити. Відчинити балкон?', en: '⚠️ TRAP? A silhouette of your friend stands outside, waving to be let in. Open the balcony?', ru: '⚠️ ЛОВУШКА? За стеклом балкона стоит силуэт вашего друга и машет рукой, прося впустить. Открыть балкон?' }, actionText: { uk: 'ВІДЧИНИТИ БАЛКОН', en: 'OPEN BALCONY', ru: 'ОТКРЫТЬ БАЛКОН' }, isTrap: true },
+            { room: 'balcony', text: { uk: 'На балконі розбилося скло і осколки летять всередину. Приберіть великі шматки.', en: 'Glass broke on the balcony, shards are flying inside. Clean up the large pieces.', ru: 'На балконе разбилось стекло и осколки летят внутрь. Уберите крупные куски.' }, actionText: { uk: 'Прибрати осколки', en: 'Clean up shards', ru: 'Убрать осколки' }, isTrap: false },
+            { room: 'balcony', text: { uk: '⚠️ ПАСТКА? З вулиці на балкон залетіла чорна пір\'їна, яка містично світиться. Підняти її?', en: '⚠️ TRAP? A glowing black feather flew onto the balcony mystically. Pick it up?', ru: '⚠️ ЛОВУШКА? С улицы на балкон залетело светящееся чёрное перо. Поднять его?' }, actionText: { uk: 'ПІДНЯТИ ПІР\'ЇНУ', en: 'PICK UP FEATHER', ru: 'ПОДНЯТЬ ПЕРО' }, isTrap: true }
         ];
 
         let score = 0, fear = 0, battery = 100;
@@ -587,7 +611,9 @@
         const apartmentRooms = {
             1: ['corridor', 'kitchen', 'bedroom', 'bathroom'],
             2: ['corridor', 'kitchen', 'bedroom', 'bathroom', 'livingroom'],
-            3: ['corridor', 'kitchen', 'bedroom', 'bathroom', 'livingroom', 'battery']
+            3: ['corridor', 'kitchen', 'bedroom', 'bathroom', 'livingroom', 'battery'],
+            4: ['corridor', 'kitchen', 'bedroom', 'bathroom', 'pantry'],
+            5: ['corridor', 'kitchen', 'bedroom', 'livingroom', 'balcony', 'battery']
         };
 
         function changeLanguage(lang) {
@@ -610,6 +636,8 @@
             document.getElementById('apt-btn-1').innerText = t.apt + "1";
             document.getElementById('apt-btn-2').innerText = t.apt + "2";
             document.getElementById('apt-btn-3').innerText = t.apt + "3";
+            document.getElementById('apt-btn-4').innerText = t.apt + "4";
+            document.getElementById('apt-btn-5').innerText = t.apt + "5";
             document.getElementById('diff-btn-easy').innerText = t.easy;
             document.getElementById('diff-btn-medium').innerText = t.medium;
             document.getElementById('diff-btn-hardcore').innerText = t.hardcore;
@@ -639,7 +667,7 @@
 
         function selectApartment(num) {
             chosenApartment = num;
-            [1, 2, 3].forEach(i => document.getElementById(`apt-btn-${i}`).classList.remove('active'));
+            [1, 2, 3, 4, 5].forEach(i => document.getElementById(`apt-btn-${i}`).classList.remove('active'));
             document.getElementById(`apt-btn-${num}`).classList.add('active');
         }
 
