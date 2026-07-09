@@ -1,13 +1,30 @@
 <!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
+<!-- saved from url=(0058)https://markiashkachaplya-ctrl.github.io/Shadow-Survivors/ -->
+<html lang="uk"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>До ранку не доживе ніхто</title>
     <style>
+        /* Додатковий захист від виділення в CSS */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-color: #0d0d13;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
         #task-info-topright {
             position: absolute;
-            top: -45px; /* Піднято вище */
+            top: -45px;
             right: 0;
             font-size: 0.85rem;
             color: #ffaa00;
@@ -20,21 +37,9 @@
             transition: opacity 0.3s;
         }
         #task-info-topright:hover {
-            opacity: 0; /* Зникає при наведенні */
+            opacity: 0;
         }
         * { box-sizing: border-box; }
-        body {
-            background-color: #0d0d13;
-            color: #ffffff;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            user-select: none;
-        }
 
         #game-wrapper {
             display: flex;
@@ -130,19 +135,6 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-        }
-
-        #task-info-topright {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 0.85rem;
-            color: #ffaa00;
-            font-weight: bold;
-            border: 1px solid #333;
-            padding: 4px 10px;
-            border-radius: 4px;
-            background: #111;
         }
 
         #task-text { font-size: 1.15rem; color: #ffcc00; font-weight: bold; margin-bottom: 20px; line-height: 1.5; min-height: 60px; width: 90%; text-align: center; }
@@ -373,7 +365,7 @@
 
     <div id="darkness-screen" class="overlay-screen">
         <div class="ending-title" id="darkness-title" style="color:#555;">ТЕМРЯВА ЗАБРАЛА ВАС</div>
-        <div class="ending-desc" id="darkness-desc">...</div>
+        <div class="ending-desc" id="darkness-desc">Ліхтарик повністю розрядився. Без світла ви не протрималися й хвилини.</div>
         <button class="restart-btn" id="btn-restart-2" onclick="showSetupScreen()">СПРОБУВАТИ ЗНОВУ</button>
     </div>
 
@@ -384,6 +376,33 @@
     </div>
 
     <script>
+        // --- БЛОК ЗАХИСТУ ВІД КОПІЮВАННЯ ТА ПЕРЕГЛЯДУ КОДУ ---
+        document.addEventListener('contextmenu', e => e.preventDefault()); // Блокує праву кнопку миші
+        document.addEventListener('selectstart', e => e.preventDefault()); // Блокує виділення тексту
+        document.addEventListener('keydown', function(e) {
+            // Блокує F12
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+            }
+            // Блокує Ctrl+Shift+I (Console), Ctrl+Shift+J, Ctrl+Shift+C (Inspect)
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C' || e.key === 'i' || e.key === 'j' || e.key === 'c')) {
+                e.preventDefault();
+            }
+            // Блокує Ctrl+U (Перегляд вихідного коду)
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+                e.preventDefault();
+            }
+            // Блокує Ctrl+S (Збереження сторінки)
+            if (e.ctrlKey && (e.key === 'S' || e.key === 's')) {
+                e.preventDefault();
+            }
+            // Блокує Ctrl+C / Ctrl+A (Копіювання/Виділення всього)
+            if (e.ctrlKey && (e.key === 'C' || e.key === 'c' || e.key === 'A' || e.key === 'a')) {
+                e.preventDefault();
+            }
+        });
+        // --------------------------------------------------------
+
         let currentLang = 'uk';
 
         const i18n = {
@@ -946,5 +965,5 @@
 
         changeLanguage('uk');
     </script>
-</body>
-</html>
+
+</body></html>
